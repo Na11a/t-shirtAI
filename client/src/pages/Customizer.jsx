@@ -12,21 +12,45 @@ import { AIPicker, ColorPicker, FilePicker, CustomButton, Tab } from "../compone
 function Customizer() {
   const snap = useSnapshot(state);
 
+  const [file,setFile] = useState('')
+  const [promt,setPromt] = useState('')
+  const [generatingImg,setGeneratingImg] = useState(false)
+
+  const [activeEditorTab, setActiveEditorTab] = useState("")
+  const [activeFilterTab,setActiveFilterTab] = useState({
+    logoShirt: true,
+    stylishShirt: false
+  })
+
+  // show tab content depending on activeTab
+  const generateTabContent = () => {
+    switch (activeEditorTab){
+      case "colorpicker":
+        return <ColorPicker />
+      case "filepicker": 
+        return <FilePicker />
+      case "aipicker": 
+        return <AIPicker />
+      default:
+        return null
+    }
+  }
+
   return (
     <AnimatePresence>
       {!snap.intro && (
         <>
-          <motion.div className="absolute top-o left-0 z-10" {...slideAnimation('left')}>
+          <motion.div className="absolute top-0 left-0 z-100" {...slideAnimation('left')}>
             <div className="flex items-center min-h-screen">
               <div className="editortabs-container tabs">
                 {EditorTabs.map((tab) => (
                     <Tab 
                       key={tab.name}
                       tab={tab}
-                      handleClick={()=>{}}
+                      handleClick={()=>{setActiveEditorTab(tab.name)}}
                     />
-                ))
-                }
+                ))}
+                {generateTabContent()}
               </div>
             </div>
           </motion.div>
@@ -36,9 +60,9 @@ function Customizer() {
           >
             <CustomButton 
               title={'Go back'}
-              type={'fillted'}
+              type={'filled'}
               handleClick={()=> state.intro = true}
-              customStyles={'w-fit px04 py-2.5 font-bold text-sm'}
+              customStyles={'w-fit px-4 py-2.5 font-bold text-sm'}
             />
           </motion.div>
           <motion.div
