@@ -5,7 +5,7 @@ import { useSnapshot } from "valtio"
 import config from '../config/config'
 import state from '../store'
 import { download } from '../assets'
-import { downloadCanvasToImage } from '../config/helpers'
+import { downloadCanvasToImage, reader } from '../config/helpers'
 import { EditorTabs, FilterTabs, DecalTypes } from '../config/constants'
 import { fadeAnimation, slideAnimation } from "../config/motion"
 import { AIPicker, ColorPicker, FilePicker, CustomButton, Tab } from "../components"
@@ -28,12 +28,68 @@ function Customizer() {
       case "colorpicker":
         return <ColorPicker />
       case "filepicker": 
-        return <FilePicker />
+        return <FilePicker 
+          file={file}
+          setFile={setFile}
+          readFile={readFile}
+          />
       case "aipicker": 
-        return <AIPicker />
+        return <AIPicker 
+          promt={promt}
+          setPromt={setPromt}
+          generatingImg={generatingImg}
+          handleSubmit={handleSubmit}
+        />
       default:
         return null
     }
+  }
+
+  const handleSubmit = async (type) => {
+    if(!promt) return alert('Please enter a promt')
+
+    try{
+
+    } catch(error){
+      alert(error)
+    }
+    setGeneratingImg(false)
+    setActiveEditorTab("")
+  }
+
+  const handleDecals = (type,result) => {
+    const decalType = DecalTypes[type]
+    state[decalType.stateProperty] = result
+    if(!activeFilterTab[decalType.filterType]){
+      handleActiveFilterTab(decalType.filterTab)
+    }
+  }
+
+  const handleActiveFilterTab = (tabname) => {
+    switch (tabname) {
+      case "logoShirt":
+        state.isLogoTexture = !activeFilterTab[tabname]
+        break;
+      case "stylishShirt":
+        state.isFullTexture = !activeFilterTab[tabname]
+      
+        default:
+          state.isFullTexture = false;
+          state.isLogoTexture = true;
+    }
+
+    //after setting the state, activeFilterTab update the UI
+    setActiveFilterTab(prev => {
+      return {
+        ...prev,
+        [tabname]: !prev[tabname]
+      }
+    })
+  }
+
+  const readFile = (type) => {
+    reader(file)
+      .then(result => { handleDecals(type,result); setActiveFilterTab("") })
   }
 
   return (
@@ -73,9 +129,9 @@ function Customizer() {
               <Tab 
                 key={tab.name}
                 tab={tab}
-                isFilterTab
-                isActiveTab=""
-                handleClick={()=>{}}
+                isFilteringTab
+                isActiveTab={activeFilterTab[tab.name]}
+                handleClick={()=>{handleActiveFilterTab(tab.name)}}
               />
             ))
           }
