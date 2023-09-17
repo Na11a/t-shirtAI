@@ -13,7 +13,7 @@ function Customizer() {
   const snap = useSnapshot(state);
 
   const [file,setFile] = useState('')
-  const [promt,setPromt] = useState('')
+  const [prompt,setPrompt] = useState('')
   const [generatingImg,setGeneratingImg] = useState(false)
 
   const [activeEditorTab, setActiveEditorTab] = useState("")
@@ -35,8 +35,8 @@ function Customizer() {
           />
       case "aipicker": 
         return <AIPicker 
-          promt={promt}
-          setPromt={setPromt}
+          prompt={prompt}
+          setPrompt={setPrompt}
           generatingImg={generatingImg}
           handleSubmit={handleSubmit}
         />
@@ -46,10 +46,27 @@ function Customizer() {
   }
 
   const handleSubmit = async (type) => {
-    if(!promt) return alert('Please enter a promt')
+    if(!prompt) return alert('Please enter a prompt')
 
     try{
+      setGeneratingImg(true);
 
+      const response = await fetch('http://localhost:8080/api/v1/dalle', {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt
+        })
+      })
+
+      const data = await response.json()
+      if (data.text === 'Trial is out'){
+        return alert('Trial is out. You can`t use Dalle')
+      }
+
+      handleDecals(type, `data:image/png;base64,${data.photo}`)
     } catch(error){
       alert(error)
     }
@@ -72,7 +89,7 @@ function Customizer() {
         break;
       case "stylishShirt":
         state.isFullTexture = !activeFilterTab[tabname]
-      
+        break;
         default:
           state.isFullTexture = false;
           state.isLogoTexture = true;
